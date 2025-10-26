@@ -7,12 +7,20 @@
 </head>
 <body>
     <h1>Simple Pong Game</h1>
-    <div id="score">
+
+    <div id="modeSelect">
+        <div id="selectText">Choose Game Mode</div>
+        <button class="modeBtn" data-score="5">5 Point Game</button>
+        <button class="modeBtn" data-score="7">7 Point Game</button>
+        <button class="modeBtn" data-score="11">11 Point Game</button>
+    </div>
+
+    <div id="score" style="display:none;">
         <span id="playerScore">0</span> : <span id="aiScore">0</span>
     </div>
     <div id="message"></div>
     <button id="newGameBtn" style="display:none;">Start New Game</button>
-    <canvas id="pongCanvas" width="800" height="400"></canvas>
+    <canvas id="pongCanvas" width="800" height="400" style="display:none;"></canvas>
     <script src="game.js"></script>
 </body>
 </html>

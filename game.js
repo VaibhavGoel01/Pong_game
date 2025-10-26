@@ -3,24 +3,65 @@ const ctx = canvas.getContext("2d");
 const messageDiv = document.getElementById("message");
 const newGameBtn = document.getElementById("newGameBtn");
 
+const modeSelectDiv = document.getElementById("modeSelect");
+const scoreDiv = document.getElementById("score");
+const playerScoreSpan = document.getElementById("playerScore");
+const aiScoreSpan = document.getElementById("aiScore");
+
 const PADDLE_WIDTH = 10, PADDLE_HEIGHT = 80;
 const BALL_SIZE = 12;
 const PLAYER_X = 20, AI_X = canvas.width - 20 - PADDLE_WIDTH;
 const PADDLE_SPEED = 6;
 const BALL_SPEED = 5;
-const WIN_SCORE = 5;
 
-let playerY = canvas.height / 2 - PADDLE_HEIGHT / 2;
-let aiY = canvas.height / 2 - PADDLE_HEIGHT / 2;
-let ballX = canvas.width / 2 - BALL_SIZE / 2;
-let ballY = canvas.height / 2 - BALL_SIZE / 2;
-let ballVX = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
-let ballVY = BALL_SPEED * (Math.random() * 2 - 1);
+let WIN_SCORE = 5; 
 
-let playerScore = 0, aiScore = 0;
-let isGameActive = true;
+let playerY, aiY, ballX, ballY, ballVX, ballVY;
+let playerScore, aiScore;
+let isGameActive = false;
+let isGameStarted = false;
 
-// Mouse control for player paddle
+function initGame() {
+    playerY = canvas.height / 2 - PADDLE_HEIGHT / 2;
+    aiY = canvas.height / 2 - PADDLE_HEIGHT / 2;
+    ballX = canvas.width / 2 - BALL_SIZE / 2;
+    ballY = canvas.height / 2 - BALL_SIZE / 2;
+    ballVX = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
+    ballVY = BALL_SPEED * (Math.random() * 2 - 1);
+    playerScore = 0;
+    aiScore = 0;
+    playerScoreSpan.textContent = playerScore;
+    aiScoreSpan.textContent = aiScore;
+    messageDiv.textContent = "";
+    newGameBtn.style.display = "none";
+    isGameActive = true;
+}
+
+function showGameUI() {
+    scoreDiv.style.display = "";
+    canvas.style.display = "";
+    modeSelectDiv.style.display = "none";
+    isGameStarted = true;
+}
+
+function showModeSelect() {
+    scoreDiv.style.display = "none";
+    canvas.style.display = "none";
+    modeSelectDiv.style.display = "flex";
+    messageDiv.textContent = "";
+    newGameBtn.style.display = "none";
+    isGameStarted = false;
+    isGameActive = false;
+}
+
+document.querySelectorAll('.modeBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        WIN_SCORE = parseInt(btn.getAttribute('data-score'));
+        initGame();
+        showGameUI();
+    });
+});
+
 canvas.addEventListener("mousemove", (e) => {
     if (!isGameActive) return;
     const rect = canvas.getBoundingClientRect();
@@ -31,14 +72,7 @@ canvas.addEventListener("mousemove", (e) => {
 });
 
 newGameBtn.addEventListener("click", () => {
-    playerScore = 0;
-    aiScore = 0;
-    document.getElementById("playerScore").textContent = playerScore;
-    document.getElementById("aiScore").textContent = aiScore;
-    messageDiv.textContent = "";
-    newGameBtn.style.display = "none";
-    isGameActive = true;
-    resetBall(Math.random() > 0.5 ? 1 : -1);
+    showModeSelect();
 });
 
 function drawRect(x, y, w, h, color) {
@@ -88,7 +122,6 @@ function updateBall() {
         ballVY = hitPos * 0.25;
         ballX = PLAYER_X + PADDLE_WIDTH;
     }
-    // AI paddle
     if (
         ballX + BALL_SIZE >= AI_X &&
         ballY + BALL_SIZE > aiY &&
@@ -100,22 +133,21 @@ function updateBall() {
         ballX = AI_X - BALL_SIZE;
     }
 
-    // Score Logic
     if (ballX < 0) {
         aiScore++;
-        document.getElementById("aiScore").textContent = aiScore;
+        aiScoreSpan.textContent = aiScore;
         checkGameOver();
         if (isGameActive) resetBall(1);
     } else if (ballX + BALL_SIZE > canvas.width) {
         playerScore++;
-        document.getElementById("playerScore").textContent = playerScore;
+        playerScoreSpan.textContent = playerScore;
         checkGameOver();
         if (isGameActive) resetBall(-1);
     }
 }
 
 function checkGameOver() {
-    if (playerScore + aiScore >= WIN_SCORE) {
+    if (playerScore >= WIN_SCORE || aiScore >= WIN_SCORE) {
         isGameActive = false;
         if (playerScore > aiScore) {
             messageDiv.textContent = "Player Wins!";
@@ -129,6 +161,7 @@ function checkGameOver() {
 }
 
 function draw() {
+    if (!isGameStarted) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawRect(PLAYER_X, playerY, PADDLE_WIDTH, PADDLE_HEIGHT, "#fff");
@@ -145,7 +178,7 @@ function draw() {
 }
 
 function gameLoop() {
-    if (isGameActive) {
+    if (isGameActive && isGameStarted) {
         updateAI();
         updateBall();
     }
@@ -153,4 +186,5 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+showModeSelect();
 gameLoop();
