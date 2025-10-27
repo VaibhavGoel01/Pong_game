@@ -188,6 +188,7 @@ function updateBall() {
         checkGameOver();
         if (isGameActive) resetBall(-1);
     }
+    checkGamePoint();
 }
 
 function checkGameOver() {
@@ -245,6 +246,33 @@ function gameLoop() {
     }
     draw();
     requestAnimationFrame(gameLoop);
+}
+
+const gamePointOverlay = document.getElementById("gamePointOverlay");
+let gamePointTimeout = null;
+let lastGamePointState = false; 
+
+function checkGamePoint() {
+    if (!isGameActive) return;
+
+    const oneAwayPlayer = (WIN_SCORE - playerScore === 1 && playerScore >= aiScore);
+    const oneAwayAI = (WIN_SCORE - aiScore === 1 && aiScore >= playerScore);
+
+    if ((oneAwayPlayer || oneAwayAI) && !lastGamePointState) {
+        showGamePointOverlay();
+        lastGamePointState = true;
+    } else if (!oneAwayPlayer && !oneAwayAI) {
+        lastGamePointState = false; 
+    }
+}
+
+function showGamePointOverlay() {
+    if (gamePointTimeout) clearTimeout(gamePointTimeout);
+    gamePointOverlay.style.display = "block";
+    gamePointOverlay.style.animation = "flash 1.2s linear";
+    gamePointTimeout = setTimeout(() => {
+        gamePointOverlay.style.display = "none";
+    }, 1200);
 }
 
 showMainMenu();
