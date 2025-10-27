@@ -1,5 +1,5 @@
 body {
-    background: #222;
+    background: #4d3f8c;
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -24,7 +24,7 @@ h1 {
     margin-bottom: 30px;
 }
 
-#modeSelect {
+#mainMenu, #modeSelect {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -32,12 +32,12 @@ h1 {
     margin-bottom: 30px;
 }
 
-#selectText {
+#mainMenuText, #selectText {
     font-size: 1.6em;
     margin-bottom: 25px;
 }
 
-.modeBtn {
+.mainMenuBtn, .modeBtn {
     font-size: 1.2em;
     padding: 12px 38px;
     margin: 10px 0;
@@ -48,7 +48,7 @@ h1 {
     cursor: pointer;
     transition: background 0.2s;
 }
-.modeBtn:hover {
+.mainMenuBtn:hover, .modeBtn:hover {
     background: #0ff;
     color: #222;
 }

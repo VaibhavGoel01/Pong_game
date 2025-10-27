@@ -32,7 +32,7 @@ A browser-based Pong game made using HTML, CSS, and JavaScript. Features include
 
 ## Planned Features
 
-- **Two Player Mode** (coming soon): Use keyboard controls for both paddles.
+- **Two Player Mode** (implemented): Use keyboard controls for both paddles.
 
 ## Controls
 

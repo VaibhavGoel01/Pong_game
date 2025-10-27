@@ -8,8 +8,14 @@
 <body>
     <h1>Simple Pong Game</h1>
 
-    <div id="modeSelect">
-        <div id="selectText">Choose Game Mode</div>
+    <div id="mainMenu">
+        <div id="mainMenuText">Choose Game Mode</div>
+        <button class="mainMenuBtn" data-mode="computer">User vs Computer</button>
+        <button class="mainMenuBtn" data-mode="user">User vs User</button>
+    </div>
+
+    <div id="modeSelect" style="display:none;">
+        <div id="selectText">Choose Game Points</div>
         <button class="modeBtn" data-score="5">5 Point Game</button>
         <button class="modeBtn" data-score="7">7 Point Game</button>
         <button class="modeBtn" data-score="11">11 Point Game</button>

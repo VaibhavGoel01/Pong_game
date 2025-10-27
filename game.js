@@ -2,7 +2,7 @@ const canvas = document.getElementById("pongCanvas");
 const ctx = canvas.getContext("2d");
 const messageDiv = document.getElementById("message");
 const newGameBtn = document.getElementById("newGameBtn");
-
+const mainMenuDiv = document.getElementById("mainMenu");
 const modeSelectDiv = document.getElementById("modeSelect");
 const scoreDiv = document.getElementById("score");
 const playerScoreSpan = document.getElementById("playerScore");
@@ -14,12 +14,47 @@ const PLAYER_X = 20, AI_X = canvas.width - 20 - PADDLE_WIDTH;
 const PADDLE_SPEED = 6;
 const BALL_SPEED = 5;
 
-let WIN_SCORE = 5; 
-
+let WIN_SCORE = 5;
 let playerY, aiY, ballX, ballY, ballVX, ballVY;
 let playerScore, aiScore;
 let isGameActive = false;
 let isGameStarted = false;
+let gameMode = null;
+
+let keysPressed = { w: false, s: false, ArrowUp: false, ArrowDown: false };
+const PLAYER2_SPEED = 7;
+
+function showMainMenu() {
+    mainMenuDiv.style.display = "flex";
+    modeSelectDiv.style.display = "none";
+    scoreDiv.style.display = "none";
+    canvas.style.display = "none";
+    newGameBtn.style.display = "none";
+    messageDiv.textContent = "";
+    isGameStarted = false;
+    isGameActive = false;
+}
+
+function showPointSelect() {
+    mainMenuDiv.style.display = "none";
+    modeSelectDiv.style.display = "flex";
+    scoreDiv.style.display = "none";
+    canvas.style.display = "none";
+    newGameBtn.style.display = "none";
+    messageDiv.textContent = "";
+    isGameStarted = false;
+    isGameActive = false;
+}
+
+function showGameUI() {
+    mainMenuDiv.style.display = "none";
+    modeSelectDiv.style.display = "none";
+    scoreDiv.style.display = "";
+    canvas.style.display = "";
+    newGameBtn.style.display = "none";
+    messageDiv.textContent = "";
+    isGameStarted = true;
+}
 
 function initGame() {
     playerY = canvas.height / 2 - PADDLE_HEIGHT / 2;
@@ -37,22 +72,12 @@ function initGame() {
     isGameActive = true;
 }
 
-function showGameUI() {
-    scoreDiv.style.display = "";
-    canvas.style.display = "";
-    modeSelectDiv.style.display = "none";
-    isGameStarted = true;
-}
-
-function showModeSelect() {
-    scoreDiv.style.display = "none";
-    canvas.style.display = "none";
-    modeSelectDiv.style.display = "flex";
-    messageDiv.textContent = "";
-    newGameBtn.style.display = "none";
-    isGameStarted = false;
-    isGameActive = false;
-}
+document.querySelectorAll('.mainMenuBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        gameMode = btn.getAttribute('data-mode');
+        showPointSelect();
+    });
+});
 
 document.querySelectorAll('.modeBtn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -62,8 +87,12 @@ document.querySelectorAll('.modeBtn').forEach(btn => {
     });
 });
 
+newGameBtn.addEventListener("click", () => {
+    showMainMenu();
+});
+
 canvas.addEventListener("mousemove", (e) => {
-    if (!isGameActive) return;
+    if (!isGameActive || gameMode !== 'computer') return;
     const rect = canvas.getBoundingClientRect();
     let mouseY = e.clientY - rect.top;
     playerY = mouseY - PADDLE_HEIGHT / 2;
@@ -71,21 +100,20 @@ canvas.addEventListener("mousemove", (e) => {
     if (playerY > canvas.height - PADDLE_HEIGHT) playerY = canvas.height - PADDLE_HEIGHT;
 });
 
-newGameBtn.addEventListener("click", () => {
-    showModeSelect();
+document.addEventListener('keydown', (e) => {
+    if (!isGameActive || gameMode !== 'user') return;
+    if (e.key === 'w' || e.key === 's' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        keysPressed[e.key] = true;
+        e.preventDefault();
+    }
 });
-
-function drawRect(x, y, w, h, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, w, h);
-}
-
-function drawBall(x, y, size, color) {
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
-    ctx.fill();
-}
+document.addEventListener('keyup', (e) => {
+    if (!isGameActive || gameMode !== 'user') return;
+    if (e.key === 'w' || e.key === 's' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        keysPressed[e.key] = false;
+        e.preventDefault();
+    }
+});
 
 function resetBall(direction) {
     ballX = canvas.width / 2 - BALL_SIZE / 2;
@@ -95,11 +123,28 @@ function resetBall(direction) {
 }
 
 function updateAI() {
+    if (gameMode !== 'computer') return;
     let centerAI = aiY + PADDLE_HEIGHT / 2;
     if (centerAI < ballY + BALL_SIZE / 2 - 10) aiY += PADDLE_SPEED;
     else if (centerAI > ballY + BALL_SIZE / 2 + 10) aiY -= PADDLE_SPEED;
     if (aiY < 0) aiY = 0;
     if (aiY > canvas.height - PADDLE_HEIGHT) aiY = canvas.height - PADDLE_HEIGHT;
+}
+
+function updatePlayer2() {
+    if (gameMode !== 'user') return;
+    if (keysPressed['ArrowUp']) aiY -= PLAYER2_SPEED;
+    if (keysPressed['ArrowDown']) aiY += PLAYER2_SPEED;
+    if (aiY < 0) aiY = 0;
+    if (aiY > canvas.height - PADDLE_HEIGHT) aiY = canvas.height - PADDLE_HEIGHT;
+}
+
+function updatePlayer1() {
+    if (gameMode !== 'user') return;
+    if (keysPressed['w']) playerY -= PLAYER2_SPEED;
+    if (keysPressed['s']) playerY += PLAYER2_SPEED;
+    if (playerY < 0) playerY = 0;
+    if (playerY > canvas.height - PADDLE_HEIGHT) playerY = canvas.height - PADDLE_HEIGHT;
 }
 
 function updateBall() {
@@ -111,7 +156,6 @@ function updateBall() {
         ballY = ballY <= 0 ? 0 : canvas.height - BALL_SIZE;
     }
 
-    // Player paddle
     if (
         ballX <= PLAYER_X + PADDLE_WIDTH &&
         ballY + BALL_SIZE > playerY &&
@@ -150,14 +194,26 @@ function checkGameOver() {
     if (playerScore >= WIN_SCORE || aiScore >= WIN_SCORE) {
         isGameActive = false;
         if (playerScore > aiScore) {
-            messageDiv.textContent = "Player Wins!";
+            messageDiv.textContent = gameMode === 'computer' ? "Player Wins!" : "Player 1 Wins!";
         } else if (aiScore > playerScore) {
-            messageDiv.textContent = "AI Wins!";
+            messageDiv.textContent = gameMode === 'computer' ? "AI Wins!" : "Player 2 Wins!";
         } else {
             messageDiv.textContent = "It's a Tie!";
         }
         newGameBtn.style.display = "inline-block";
     }
+}
+
+function drawRect(x, y, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+}
+
+function drawBall(x, y, size, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 function draw() {
@@ -179,12 +235,17 @@ function draw() {
 
 function gameLoop() {
     if (isGameActive && isGameStarted) {
-        updateAI();
+        if (gameMode === 'computer') {
+            updateAI();
+        } else if (gameMode === 'user') {
+            updatePlayer1();
+            updatePlayer2();
+        }
         updateBall();
     }
     draw();
     requestAnimationFrame(gameLoop);
 }
 
-showModeSelect();
+showMainMenu();
 gameLoop();
